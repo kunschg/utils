@@ -3,8 +3,9 @@ import time
 import torch
 
 device = "cuda"
-bytes = 256400000  # 256400000
-pin = False
+bytes = 256400  # 256400
+pin = True
+nb_tensors = 1
 gpu_loaded = False
 
 
@@ -13,14 +14,18 @@ if gpu_loaded:
     load = torch.LongTensor(num_elements)
     load = load.to(device)
 
+tensors_list = []
 num_elements = bytes // torch.LongTensor().element_size()
-t = torch.LongTensor(num_elements)
+for _ in range(nb_tensors):
+    tensors_list.append(torch.LongTensor(int(num_elements // nb_tensors)))
 
 if pin:
-    t = t.pin_memory()
+    for t in tensors_list:
+        t = t.pin_memory()
 
 start = time.time()
-t = t.to(device)
+for t in tensors_list:
+    t = t.to(device)
 end = time.time()
 duration = end - start
 print(f"Duration is {duration}")
